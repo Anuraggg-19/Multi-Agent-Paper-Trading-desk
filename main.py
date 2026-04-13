@@ -137,7 +137,8 @@ async def run_live():
         ),
     ]
 
-    print(f"\n  All agents online. Tracking: {', '.join(Config.TRADING_SYMBOLS)}")
+    print(f"  All agents online. Tracking: {', '.join(Config.TRADING_SYMBOLS)}")
+    print(f"  Polling every {Config.POLL_INTERVAL_SECONDS}s for live quotes.")
     print("  Press Ctrl+C to stop.\n")
 
     # Keep alive
