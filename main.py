@@ -63,7 +63,49 @@ async def run_live():
     risk = RiskAgent(portfolio, Config)
     execution = ExecutionAgent(portfolio)
 
-    # Create message buses
+    # ── WARM-UP: Pre-load today's historical candles ─────────────────
+    print("\n  [Warm-Up] Loading today's historical candles...")
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    for symbol in Config.TRADING_SYMBOLS:
+        df = await asyncio.get_event_loop().run_in_executor(
+            None,
+            fetcher.fetch_historical,
+            symbol,
+            Config.HISTORY_RESOLUTION,
+            today,
+            today,
+        )
+
+        if df.empty:
+            print(f"  [Warm-Up] No historical data for {symbol} — will build from live ticks")
+            continue
+
+        # Seed the Research Agent's price history directly
+        candles = []
+        for _, row in df.iterrows():
+            candles.append({
+                "timestamp": row["timestamp"].isoformat(),
+                "open": float(row["open"]),
+                "high": float(row["high"]),
+                "low": float(row["low"]),
+                "close": float(row["close"]),
+                "volume": int(row["volume"]),
+            })
+        research.price_history[symbol] = candles
+
+        # Also seed the latest price for risk/execution agents
+        last_price = float(df.iloc[-1]["close"])
+        risk.current_prices[symbol] = last_price
+        execution.current_prices[symbol] = last_price
+
+        print(f"  [Warm-Up] {symbol}: loaded {len(candles)} candles | last price Rs.{last_price:.2f}")
+
+    total_warmed = sum(len(v) for v in research.price_history.values())
+    print(f"  [Warm-Up] Done! {total_warmed} total candles pre-loaded across {len(research.price_history)} symbols")
+    print(f"  [Warm-Up] Indicators are {'READY' if total_warmed >= 50 else 'BUILDING (need more ticks)'}!\n")
+
+    # ── Start live agents ────────────────────────────────────────────
     # data_bus:     data_fetcher -> research_agent
     # signal_bus:   research_agent -> risk_agent  (ticks + signals)
     # approved_bus: risk_agent -> execution_agent (ticks + approved trades)
