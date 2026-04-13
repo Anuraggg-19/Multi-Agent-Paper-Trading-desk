@@ -26,6 +26,9 @@ from core.backtester import Backtester
 
 async def run_live():
     """Start all agents for live paper trading."""
+    from datetime import datetime, timedelta
+    import pandas as pd
+
     print("\n" + "=" * 60)
     print("  MULTI-AGENT PAPER TRADING PLATFORM")
     print("  Mode: LIVE PAPER TRADING")
