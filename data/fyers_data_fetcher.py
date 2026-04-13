@@ -97,7 +97,7 @@ class FyersDataFetcher:
             DataFrame with columns: timestamp, open, high, low, close, volume
         """
         if from_date is None:
-            from_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+            from_date = datetime.now().strftime("%Y-%m-%d")
         if to_date is None:
             to_date = datetime.now().strftime("%Y-%m-%d")
 
