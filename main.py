@@ -150,7 +150,7 @@ def main():
 
     if args.backtest:
         from datetime import datetime, timedelta
-        start = args.from_date or (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start = args.from_date or datetime.now().strftime("%Y-%m-%d")
         end = args.to_date or datetime.now().strftime("%Y-%m-%d")
         try:
             asyncio.run(run_backtest(start, end))
